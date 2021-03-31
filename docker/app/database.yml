@@ -6,10 +6,6 @@ default: &default
   pool: 5
   host: db
 
-development:
+production:
   <<: *default
-  database: app_development
-
-test:
-  <<: *default
-  database: app_test
+  database: app_name_production
