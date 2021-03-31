@@ -1,17 +1,19 @@
-version: '3.7'
-volumes:
-  postgres_data: {}
+version: '3.9'
 services:
   app:
     build:
       context: .
       dockerfile: ./docker/app/Dockerfile
+    volumes:
+      - ./app:/var/www/app
     depends_on:
       - db
   db:
     image: postgres
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ./app/tmp/db:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: password
   web:
     build:
       context: .
