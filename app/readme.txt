@@ -1,1 +1,1 @@
-Put your Rails project files  here
+Put your Rails project files here
