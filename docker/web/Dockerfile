@@ -1,8 +1,8 @@
 # Base image
-FROM nginx
+FROM nginx:1.19.9-alpine
 
 # Install dependencies
-RUN apt-get update -qq && apt-get -y install apache2-utils
+RUN apk add --update --no-cache apache2-utils
 
 # establish where Nginx should look for files
 ENV RAILS_ROOT /var/www/app
