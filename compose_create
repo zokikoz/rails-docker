@@ -5,10 +5,12 @@ cp docker/app/Gemfile app
 cp docker/app/Gemfile.lock app
 
 # Create new Rails app
-docker-compose run --no-deps app rails new . --force --database=postgresql
+docker-compose run --rm --no-deps app rails new . --force --database=postgresql
 
-# Change root ownership to user
-sudo chown -R $USER:$USER app
+# Change root ownership to user (not on macs)
+if [[ ! "$OSTYPE" == "darwin"* ]]; then
+  sudo chown -R $USER:$USER app
+fi
 
 # Build containers
 docker-compose build
