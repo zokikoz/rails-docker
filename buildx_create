@@ -1,0 +1,66 @@
+#!/bin/bash
+# Create new Rails (Postgres+Nginx) project using Docker buildx engine
+
+# Check argument is not empty and contains delimiter /
+if [[ ! -z $1 && $1 =~ "/" ]]; then
+  user=${1%/*} # Substring before /
+  project=${1##*/} # Substring after /
+# Setting values from input
+else
+  echo "You can use buildx_create <username>/<project> [platform]"
+  read -p "Docker hub username: " user
+  read -p "Project name: " project
+fi
+[[ ! -z $2 ]] && platform=$2 || platform="linux/amd64"
+echo "Building images ${user}/${project}_app and ${user}/${project}_web for ${platform}"
+read -p "Continue? [y/N] "  -n 1 -r && echo && [[ ! $REPLY =~ ^[Yy]$ ]] && exit 1
+
+docker login
+
+# Copy base Rails gemfiles
+cp docker/app/Gemfile app
+cp docker/app/Gemfile.lock app
+# Building Ruby image
+docker buildx build --platform ${platform} -f docker/app/Dockerfile . -t ${user}/${project}_app:latest --push
+# Installing Rails
+docker run --name rails_install ${user}/${project}_app rails new . --force --database=postgresql
+# Commiting to image
+docker commit rails_install ${user}/${project}_app
+docker push ${user}/${project}_app:latest
+docker rm -f rails_install
+# Starting Puma
+docker create --name rails_puma ${user}/${project}_app rails server -b 0.0.0.0
+# Commiting to image
+docker commit rails_puma ${user}/${project}_app
+docker push ${user}/${project}_app:latest
+# Synchronizing project directory
+docker cp rails_puma:/var/www/app .
+docker rm -f rails_puma
+#docker run -v $(pwd)/app/:/var/www/app ${user}/${project}_app
+
+# Building Nginx image
+docker buildx build --platform ${platform} -f docker/web/Dockerfile . -t ${user}/${project}_web:latest --push
+
+# Generating Compose file
+cat > ./docker-compose.yml <<EOF
+version: '3.9'
+services:
+  app:
+    image: ${user}/${project}_app
+    volumes:
+      - ./app:/var/www/app
+    depends_on:
+      - db
+  db:
+    image: postgres:13.2-alpine
+    volumes:
+      - ./app/tmp/db:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: password
+  web:
+    image: ${user}/${project}_web
+    depends_on:
+      - app
+    ports:
+      - 8080:80
+EOF

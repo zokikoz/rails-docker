@@ -1,0 +1,11 @@
+#!/bin/bash
+# Create Rails database
+
+# Setting up database connection
+cp docker/app/database.yml app/config
+
+# Create database
+docker-compose up -d
+docker-compose run app rake db:create
+
+docker-compose stop
