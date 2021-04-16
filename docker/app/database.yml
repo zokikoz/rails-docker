@@ -10,6 +10,10 @@ development:
   <<: *default
   database: app_development
 
+production:
+  <<: *default
+  database: app_production
+
 test:
   <<: *default
   database: app_test
