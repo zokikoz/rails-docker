@@ -1,0 +1,21 @@
+#!/bin/bash
+# Updates app image after 'bundle install' 
+
+dir=${PWD##*/} # Get current directory name 
+image_base=${dir//_/} # remove underscores
+service_name='app' # Service name
+docker_image_name=$image_base'_'$service_name # build docker compose image name
+
+# Bundle install
+docker-compose run $service_name bundle install
+run_container=$(docker ps -l -q) #get the last run container id
+docker commit $run_container $docker_image_name #commit the image changes
+docker rm $run_container # remove the run container
+
+# Setting rails server
+docker-compose run -d $service_name rails server -b 0.0.0.0
+docker-compose stop
+run_container=$(docker ps -l -q) #get the last run container id
+docker stop $run_container
+docker commit $run_container $docker_image_name #commit the image changes
+docker rm $run_container # remove the run container
