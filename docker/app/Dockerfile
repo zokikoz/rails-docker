@@ -22,6 +22,7 @@ RUN apk add --update --no-cache \
       openssl \
       pkgconfig \
       postgresql-dev \
+      postgresql-client \
       python2 \
       python3 \
       tzdata \
