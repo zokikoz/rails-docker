@@ -1,5 +1,8 @@
 #!/bin/bash
-# Updates app image after 'bundle install' 
+# Updates app image after 'bundle install'
+
+# !!! DON'T USE IT !!! 
+# Bundle gems are now stored in a separate volume instead of in a container.
 
 dir=${PWD##*/} # Get current directory name 
 image_base=${dir//_/} # remove underscores

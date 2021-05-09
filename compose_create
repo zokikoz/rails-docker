@@ -4,6 +4,9 @@
 cp docker/app/Gemfile app
 cp docker/app/Gemfile.lock app
 
+# Build containers
+docker-compose build
+
 # Create new Rails app
 docker-compose run --rm --no-deps app rails new . --force --database=postgresql
 
@@ -12,14 +15,9 @@ if [[ ! "$OSTYPE" == "darwin"* ]]; then
   sudo chown -R $USER:$USER app
 fi
 
-# Build containers
-docker-compose build
-
 # Setting up database connection
 cp docker/app/database.yml app/config
 
 # Create database
-docker-compose up -d
-docker-compose run app rake db:create
-
+docker-compose run --rm app rails db:create
 docker-compose stop
