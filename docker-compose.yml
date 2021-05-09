@@ -9,12 +9,15 @@ services:
       - gems:/usr/local/bundle
     depends_on:
       - db
+      - redis
   db:
     image: postgres:13.2-alpine
     volumes:
       - database:/var/lib/postgresql/data
     environment:
       POSTGRES_PASSWORD: password
+  redis:
+    image: redis:6.2.3-alpine
   web:
     build:
       context: .
